@@ -6,6 +6,11 @@ import '../../models/booking.dart';
 import '../../providers/booking_provider.dart';
 import '../../core/constants/booking_status.dart';
 
+import '../../models/notification_model.dart';
+import '../../providers/notification_provider.dart';
+import '../../providers/service_provider.dart';
+import '../../models/service.dart';
+
 class AddBookingScreen extends StatefulWidget {
   const AddBookingScreen({super.key});
 
@@ -18,20 +23,27 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
 
   final _notesController = TextEditingController();
 
-  String _service = "Hair Cut";
-  double _price = 200;
+  String? _selectedServiceId;
+
+  String _service = "";
+  double _price = 0;
 
   DateTime _date = DateTime.now();
 
   TimeOfDay _time = TimeOfDay.now();
 
-  final Map<String, double> services = {
-    "Hair Cut": 200,
-    "Beard Trim": 100,
-    "Hair Spa": 800,
-    "Hair Color": 1200,
-    "Facial": 600,
-  };
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      Provider.of<ServiceProvider>(
+        context,
+        listen: false,
+      ).loadServices();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,22 +58,49 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
           child: ListView(
             children: [
 
-              DropdownButtonFormField<String>(
-                value: _service,
-                decoration: const InputDecoration(
-                  labelText: "Service",
-                ),
-                items: services.keys.map((service) {
-                  return DropdownMenuItem(
-                    value: service,
-                    child: Text(service),
+
+              Consumer<ServiceProvider>(
+                builder: (context, provider, child) {
+                  final services = provider.services
+                      .where((service) => service.isActive)
+                      .toList();
+
+                  if (services.isEmpty) {
+                    return const Center(
+                      child: Text("No Services Available"),
+                    );
+                  }
+
+                  if (_selectedServiceId == null) {
+                    _selectedServiceId = services.first.id;
+                    _service = services.first.name;
+                    _price = services.first.price;
+                  }
+
+                  return DropdownButtonFormField<String>(
+                    value: _selectedServiceId,
+                    decoration: const InputDecoration(
+                      labelText: "Service",
+                    ),
+                    items: services.map((service) {
+                      return DropdownMenuItem<String>(
+                        value: service.id,
+                        child: Text(
+                          "${service.name} - ₹${service.price.toStringAsFixed(0)}",
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      final selected =
+                      services.firstWhere((e) => e.id == value);
+
+                      setState(() {
+                        _selectedServiceId = selected.id;
+                        _service = selected.name;
+                        _price = selected.price;
+                      });
+                    },
                   );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _service = value!;
-                    _price = services[value]!;
-                  });
                 },
               ),
 
@@ -129,7 +168,7 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
                     customerId: firebaseUser.uid,
                     customerName:
                     firebaseUser.displayName ?? "",
-                    serviceId: _service,
+                    serviceId: _selectedServiceId ?? "",
                     serviceName: _service,
                     bookingDate: _date,
                     bookingTime: _time.format(context),
@@ -144,11 +183,29 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
                     listen: false,
                   ).addBooking(booking);
 
+                  // Create notification
+                  final notification = NotificationModel(
+                    id: '',
+                    userId: firebaseUser.uid,
+                    title: 'Booking Received',
+                    message:
+                    'Your booking request has been received. We will confirm it shortly.',
+                    type: 'booking',
+                    bookingId: null,
+                    isRead: false,
+                    createdAt: DateTime.now(),
+                  );
+
+                  await Provider.of<NotificationProvider>(
+                    context,
+                    listen: false,
+                  ).addNotification(notification);
+
                   if (mounted) {
                     Navigator.pop(context);
                   }
                 },
-                child: const Text("BOOK NOW"),
+                child: const Text("BOOK APPOINTMENT"),
               )
             ],
           ),

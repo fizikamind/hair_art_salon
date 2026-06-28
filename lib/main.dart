@@ -2,20 +2,20 @@ import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-import 'core/theme/app_theme.dart';
-import 'firebase_options.dart';
-
-import 'providers/auth_provider.dart';
-
-import 'screens/login/login_screen.dart';
-import 'providers/service_provider.dart';
-import 'screens/main_screen.dart';
-import 'providers/booking_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'screens/admin/admin_dashboard.dart';
+import 'firebase_options.dart';
 
+import 'core/theme/app_theme.dart';
+
+import 'providers/auth_provider.dart';
+import 'providers/booking_provider.dart';
+import 'providers/service_provider.dart';
+import 'providers/notification_provider.dart';
+
+import 'screens/login/login_screen.dart';
+import 'screens/main_screen.dart';
+import 'screens/admin/admin_dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,15 +27,23 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+
         ChangeNotifierProvider(
           create: (_) => AuthProvider(),
         ),
-        ChangeNotifierProvider(
-          create: (_) => ServiceProvider(),
-        ),
+
         ChangeNotifierProvider(
           create: (_) => BookingProvider(),
         ),
+
+        ChangeNotifierProvider(
+          create: (_) => ServiceProvider(),
+        ),
+
+        ChangeNotifierProvider(
+          create: (_) => NotificationProvider(),
+        ),
+
       ],
       child: const MyApp(),
     ),
@@ -48,8 +56,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hair Art Salon',
       debugShowCheckedModeBanner: false,
+      title: 'Hair Art Salon',
       theme: AppTheme.darkTheme,
 
       home: StreamBuilder<User?>(
@@ -67,7 +75,6 @@ class MyApp extends StatelessWidget {
                 .collection('users')
                 .doc(uid)
                 .get(),
-
             builder: (context, snapshot) {
 
               if (!snapshot.hasData) {
