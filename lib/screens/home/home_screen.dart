@@ -1,223 +1,321 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_animation.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_text_styles.dart';
+
+import '../../widgets/buttons/primary_button.dart';
+import '../../widgets/cards/premium_card.dart';
+import '../../widgets/common/section_header.dart';
+import '../../widgets/navigation/premium_app_bar.dart';
+
 import '../booking/add_booking_screen.dart';
 import '../booking/my_bookings_screen.dart';
+import '../notifications/notification_screen.dart';
 import '../services/service_list_screen.dart';
+import '../../widgets/cards/quick_action_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  String _greeting() {
+    final hour = DateTime.now().hour;
+
+    if (hour < 12) {
+      return "Good Morning ☀";
+    }
+
+    if (hour < 17) {
+      return "Good Afternoon ☀";
+    }
+
+    return "Good Evening 🌙";
+  }
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
+      appBar: PremiumAppBar(
+        title: "Hair Art Salon",
+        showBackButton: false,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.notifications_outlined,
+              color: AppColors.primary,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      const NotificationScreen(),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
+        child: AnimatedContainer(
+          duration: AppAnimation.normal,
+          curve: AppAnimation.easeInOut,
+          child: ListView(
+            padding: AppSpacing.pagePadding,
+            children: [
 
-            const SizedBox(height: 10),
-
-            Text(
-              "Hair Art Salon",
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-
-            const SizedBox(height: 6),
-
-            Text(
-              "Hello, ${user?.displayName ?? "Customer"} 👋",
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              Text(
+                _greeting(),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.primary,
+                ),
               ),
-            ),
 
-            const Text(
-              "Welcome Back",
-              style: TextStyle(
-                color: Colors.grey,
+              AppSpacing.h8,
+
+              Text(
+                "Hello, ${user?.displayName ?? "Customer"} 👋",
+                style: AppTextStyles.headlineMedium,
               ),
-            ),
 
-            const SizedBox(height: 25),
+              AppSpacing.h4,
 
-            Card(
-              elevation: 5,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
+              Text(
+                "Welcome back to Hair Art Salon",
+                style: AppTextStyles.bodySmall,
+              ),
+
+              AppSpacing.h24,
+
+              SectionHeader(
+                title: "Upcoming Appointment",
+              ),
+
+              AppSpacing.h12,
+
+              PremiumCard(
                 child: Column(
                   crossAxisAlignment:
-                  CrossAxisAlignment.start,
+                      CrossAxisAlignment.start,
                   children: [
 
-                    const Row(
-                      children: [
-                        Icon(Icons.calendar_month),
-                        SizedBox(width: 10),
-                        Text(
-                          "Upcoming Appointment",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    Row(
+                      children: const [
+
+                        Icon(
+                          Icons.calendar_month,
+                          color: AppColors.primary,
                         ),
+
+                        SizedBox(width: 10),
+
+                        Text(
+                          "No Upcoming Booking",
+                          style:
+                              AppTextStyles.cardTitle,
+                        ),
+
                       ],
                     ),
 
-                    const SizedBox(height: 20),
+                    AppSpacing.h16,
 
-                    const Text(
-                      "No Upcoming Booking",
-                      style: TextStyle(
-                        fontSize: 18,
-                      ),
+                    Text(
+                      "Book your next appointment with our professional stylists.",
+                      style:
+                          AppTextStyles.bodyMedium,
                     ),
 
-                    const SizedBox(height: 8),
+                    AppSpacing.h20,
 
-                    const Text(
-                      "Book your next appointment.",
+                    PrimaryButton(
+                      text: "BOOK APPOINTMENT",
+                      icon: Icons.calendar_month,
+                      onPressed: () {
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                const AddBookingScreen(),
+                          ),
+                        );
+                      },
                     ),
 
                   ],
                 ),
               ),
-            ),
 
-            const SizedBox(height: 25),
+              AppSpacing.h32,
 
-            SizedBox(
-              height: 50,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: const Text(
-                  "BOOK APPOINTMENT",
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                      const AddBookingScreen(),
+              const SectionHeader(
+                title: "Quick Actions",
+              ),
+
+              AppSpacing.h16,
+              GridView.count(
+                physics:
+                    const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.15,
+                children: [
+
+                  QuickActionCard(
+                    title: "Services",
+                    icon: Icons.content_cut,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const ServiceListScreen(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  QuickActionCard(
+                    title: "My Bookings",
+                    icon: Icons.calendar_month,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const MyBookingsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  QuickActionCard(
+                    title: "Membership",
+                    icon: Icons.workspace_premium,
+                    onTap: () {},
+                  ),
+
+                  QuickActionCard(
+                    title: "Offers",
+                    icon: Icons.local_offer,
+                    onTap: () {},
+                  ),
+                ],
+              ),
+
+              AppSpacing.h32,
+
+              const SectionHeader(
+                title: "Today's Offer",
+              ),
+
+              AppSpacing.h12,
+
+              PremiumCard(
+                gradient: AppColors.primaryGradient,
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+
+                    Text(
+                      "20% OFF",
+                      style: AppTextStyles.headlineMedium
+                          .copyWith(
+                        color: Colors.black,
+                      ),
                     ),
-                  );
-                },
-              ),
-            ),
 
-            const SizedBox(height: 30),
+                    AppSpacing.h8,
 
-            const Text(
-              "Quick Actions",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            GridView.count(
-              physics:
-              const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.2,
-              children: [
-
-                _HomeCard(
-                  icon: Icons.content_cut,
-                  title: "Services",
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                        const ServiceListScreen(),
+                    Text(
+                      "Hair Spa Package",
+                      style: AppTextStyles.titleLarge
+                          .copyWith(
+                        color: Colors.black,
                       ),
-                    );
-                  },
-                ),
+                    ),
 
-                _HomeCard(
-                  icon: Icons.calendar_month,
-                  title: "My Bookings",
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                        const MyBookingsScreen(),
+                    AppSpacing.h8,
+
+                    Text(
+                      "Limited time offer.\nBook today and save on your premium hair spa experience.",
+                      style: AppTextStyles.bodyMedium
+                          .copyWith(
+                        color: Colors.black87,
                       ),
-                    );
-                  },
+                    ),
+
+                  ],
                 ),
-
-                _HomeCard(
-                  icon: Icons.workspace_premium,
-                  title: "Membership",
-                  onTap: () {},
-                ),
-
-                _HomeCard(
-                  icon: Icons.local_offer,
-                  title: "Offers",
-                  onTap: () {},
-                ),
-
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HomeCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback onTap;
-
-  const _HomeCard({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment:
-          MainAxisAlignment.center,
-          children: [
-
-            Icon(
-              icon,
-              size: 50,
-            ),
-
-            const SizedBox(height: 15),
-
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
               ),
-            ),
 
-          ],
+              AppSpacing.h32,
+
+              const SectionHeader(
+                title: "Recent Notification",
+              ),
+
+              AppSpacing.h12,
+
+              PremiumCard(
+                child: Row(
+                  children: [
+
+                    Container(
+                      height: 50,
+                      width: 50,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary
+                            .withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.notifications,
+                        color: AppColors.primary,
+                      ),
+                    ),
+
+                    AppSpacing.w16,
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                        children: [
+
+                          Text(
+                            "Welcome to Hair Art Salon",
+                            style:
+                                AppTextStyles.titleMedium,
+                          ),
+
+                          AppSpacing.h4,
+
+                          Text(
+                            "Book your first appointment and enjoy our premium services.",
+                            style:
+                                AppTextStyles.bodySmall,
+                          ),
+
+                        ],
+                      ),
+                    ),
+
+                  ],
+                ),
+              ),
+
+              AppSpacing.h32,
+            ],
+          ),
         ),
       ),
     );

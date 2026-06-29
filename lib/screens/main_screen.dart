@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'home/home_screen.dart';
 import 'booking/my_bookings_screen.dart';
 import 'services/service_list_screen.dart';
-import 'customers/customer_screen.dart';
 import 'profile/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {

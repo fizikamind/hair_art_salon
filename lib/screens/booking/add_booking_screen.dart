@@ -9,7 +9,7 @@ import '../../core/constants/booking_status.dart';
 import '../../models/notification_model.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/service_provider.dart';
-import '../../models/service.dart';
+
 
 class AddBookingScreen extends StatefulWidget {
   const AddBookingScreen({super.key});
